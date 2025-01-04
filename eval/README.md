@@ -38,9 +38,9 @@ pip install -r requirements_lcb.txt
 
 ### Eval
 
-1. Set your `conda.sh` path [here]() so that different environments can be activated during testing. For example, I set to `/path/anaconda3/etc/profile.d/conda.sh`
+1. Set your `conda.sh` path [here](https://github.com/wanghanbinpanda/PRIME/blob/e787b9cefff7c43c40a98a41c2254cddd38ebd09/eval/scripts/eval/run.sh#L2) so that different environments can be activated during testing. For example, I set to `/path/anaconda3/etc/profile.d/conda.sh`
 
-2. Set the output directory [here]() to save the test results.
+2. Set the output directory [here](https://github.com/wanghanbinpanda/PRIME/blob/e787b9cefff7c43c40a98a41c2254cddd38ebd09/eval/scripts/eval/run.sh#L5) to save the test results.
 
 3. Download the model, you can download the model locally in [HuggingFace](https://huggingface.co/PRIME-RL).
 
