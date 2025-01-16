@@ -601,6 +601,11 @@ class RayPRIMETrainer(object):
                         # self.config.trainer.default_hdfs_dir, 'actor')
                     self.actor_rollout_wg.save_checkpoint(actor_local_path, actor_remote_path)
 
+                    if self.use_rm:
+                        reward_local_path = os.path.join(self.config.trainer.default_local_dir, 'reward', f'global_step_{global_steps}')
+                        reward_remote_path = None
+                        self.rm_wg.save_checkpoint(reward_local_path, reward_remote_path)
+
                     if self.use_critic:
                         critic_local_path = os.path.join(self.config.trainer.default_local_dir, 'critic',
                                                          f'global_step_{global_steps}')

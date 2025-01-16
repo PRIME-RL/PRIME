@@ -1053,3 +1053,41 @@ class PRIMERewardModelWorker(Worker):
         output = output.to('cpu')
         torch.cuda.empty_cache()
         return output
+
+    @register(dispatch_mode=Dispatch.ONE_TO_ALL)
+    def save_checkpoint(self, local_path, hdfs_path=None):
+        """
+        Save checkpoint for PRIME Reward Model.
+        
+        Args:
+            local_path: Local path to save the checkpoint
+            hdfs_path: Optional HDFS path to upload the checkpoint
+        """
+        import torch
+        if self._is_offload_param:
+            load_fsdp_param_and_grad(module=self.reward_module,
+                                    device_id=torch.cuda.current_device(),
+                                    load_grad=self._is_offload_grad)
+
+        # Save FSDP state dict
+        import torch.distributed
+        from torch.distributed.fsdp import FullyShardedDataParallel as FSDP, StateDictType, FullStateDictConfig
+        cfg = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)
+        
+        with FSDP.state_dict_type(self.reward_module, StateDictType.FULL_STATE_DICT, cfg):
+            reward_state_dict = self.reward_module.state_dict()
+        
+        if self.rank == 0:
+            print(f'Saving reward model checkpoint to {local_path}')
+            os.makedirs(local_path, exist_ok=True)
+            self.reward_module._fsdp_wrapped_module.save_pretrained(local_path, state_dict=reward_state_dict)
+            self.tokenizer.save_pretrained(local_path)
+            
+            if hdfs_path is not None:
+                print(f'Uploading reward model checkpoint to {hdfs_path}')
+                hdfs_io.makedirs(hdfs_path, exist_ok=True)
+                hdfs_io.copy(src=local_path, dst=hdfs_path)
+
+        torch.distributed.barrier()
+        if self._is_offload_param:
+            offload_fsdp_param_and_grad(module=self.reward_module, offload_grad=self._is_offload_grad)
