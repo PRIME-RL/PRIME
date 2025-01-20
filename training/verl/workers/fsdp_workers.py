@@ -134,6 +134,16 @@ class ActorRolloutRefWorker(Worker):
         # NOTE(fix me): tie_word_embedding causes meta_tensor init to hang
         init_context = get_init_weight_context_manager(use_meta_tensor=not actor_model_config.tie_word_embeddings)
 
+        # Apply Liger kernel optimizations to Qwen2 model
+        from liger_kernel.transformers import apply_liger_kernel_to_qwen2
+        apply_liger_kernel_to_qwen2(
+            rope=False,
+            cross_entropy=False,
+            fused_linear_cross_entropy=True,
+            rms_norm=True,
+            swiglu=True
+        )
+
         with init_context(), warnings.catch_warnings():
             warnings.simplefilter("ignore")
             actor_module = AutoModelForCausalLM.from_pretrained(pretrained_model_name_or_path=local_path,
@@ -689,6 +699,16 @@ class RewardModelWorker(Worker):
         model_config = AutoConfig.from_pretrained(local_path, trust_remote_code=trust_remote_code)
         # note that we have to create model in fp32. Otherwise, the optimizer is in bf16, which is incorrect
         init_context = get_init_weight_context_manager(use_meta_tensor=not model_config.tie_word_embeddings)
+
+        # Apply Liger kernel optimizations to Qwen2 model
+        from liger_kernel.transformers import apply_liger_kernel_to_qwen2
+        apply_liger_kernel_to_qwen2(
+            rope=False,
+            cross_entropy=False,
+            fused_linear_cross_entropy=True,
+            rms_norm=True,
+            swiglu=True
+        )
 
         with init_context(), warnings.catch_warnings():
             warnings.simplefilter("ignore")
