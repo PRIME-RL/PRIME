@@ -892,10 +892,10 @@ class PRIMERewardModelWorker(Worker):
         with init_context(), warnings.catch_warnings():
             warnings.simplefilter("ignore")
             reward_module = AutoModelForCausalLM.from_pretrained(pretrained_model_name_or_path=local_path,
-                                                                               torch_dtype=torch.bfloat16,
+                                                                               torch_dtype=torch.float32,
                                                                                attn_implementation='flash_attention_2',
                                                                                trust_remote_code=trust_remote_code)
-            reward_module.to(torch.bfloat16)
+            reward_module.to(torch.float32)
             if enable_gradient_checkpointing:
                 reward_module.gradient_checkpointing_enable()
         from torch.distributed.fsdp import FullyShardedDataParallel as FSDP, ShardingStrategy, MixedPrecision
