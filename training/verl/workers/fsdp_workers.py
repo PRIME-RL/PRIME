@@ -700,16 +700,6 @@ class RewardModelWorker(Worker):
         # note that we have to create model in fp32. Otherwise, the optimizer is in bf16, which is incorrect
         init_context = get_init_weight_context_manager(use_meta_tensor=not model_config.tie_word_embeddings)
 
-        # Apply Liger kernel optimizations to Qwen2 model
-        from liger_kernel.transformers import apply_liger_kernel_to_qwen2
-        apply_liger_kernel_to_qwen2(
-            rope=False,
-            cross_entropy=False,
-            fused_linear_cross_entropy=True,
-            rms_norm=True,
-            swiglu=True
-        )
-
         with init_context(), warnings.catch_warnings():
             warnings.simplefilter("ignore")
             reward_module = AutoModelForSequenceClassification.from_pretrained(pretrained_model_name_or_path=local_path,
@@ -888,6 +878,16 @@ class PRIMERewardModelWorker(Worker):
             from verl.models.registry import check_model_support_rmpad
             check_model_support_rmpad(model_config.model_type)
         init_context = get_init_weight_context_manager(use_meta_tensor=not model_config.tie_word_embeddings)
+
+        # Apply Liger kernel optimizations to Qwen2 model
+        from liger_kernel.transformers import apply_liger_kernel_to_qwen2
+        apply_liger_kernel_to_qwen2(
+            rope=False,
+            cross_entropy=False,
+            fused_linear_cross_entropy=True,
+            rms_norm=True,
+            swiglu=True
+        )
 
         with init_context(), warnings.catch_warnings():
             warnings.simplefilter("ignore")
