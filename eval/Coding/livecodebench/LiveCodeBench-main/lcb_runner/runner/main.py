@@ -19,10 +19,16 @@ from lcb_runner.runner.scenario_router import (
 def main():
     args = get_args()
     if args.model not in LanguageModelStore:
+        model_style = LMStyle.Qwen25Math
+        if os.getenv("FORGE_API_KEY") and "/" in args.model:
+            model_style = LMStyle.OpenAIChat
+            model_suffix = args.model.split("/", 1)[1].lower()
+            if model_suffix.startswith("o1-"):
+                model_style = LMStyle.OpenAIReason
         model = LanguageModel(
                 str(args.model),
                 str(args.model),
-                LMStyle.Qwen25Math,
+                model_style,
                 datetime(2023, 1, 1),
                 link="https://huggingface.co/Qwen/Qwen2.5-Math-7B-Instruct",
             )
