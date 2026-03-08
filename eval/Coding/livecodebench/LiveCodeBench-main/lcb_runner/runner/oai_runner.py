@@ -12,9 +12,15 @@ from lcb_runner.runner.base_runner import BaseRunner
 
 
 class OpenAIRunner(BaseRunner):
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_KEY"),
-    )
+    if os.getenv("FORGE_API_KEY"):
+        client = OpenAI(
+            api_key=os.getenv("FORGE_API_KEY"),
+            base_url=os.getenv("FORGE_API_BASE") or "https://api.forge.tensorblock.co/v1",
+        )
+    else:
+        client = OpenAI(
+            api_key=os.getenv("OPENAI_KEY"),
+        )
 
     def __init__(self, args, model):
         super().__init__(args, model)
